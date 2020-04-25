@@ -1,5 +1,5 @@
 import numpy as np
-import math
+import scipy.stats
 
 
 class NaiveBayesLearner:
@@ -23,8 +23,10 @@ class NaiveBayesLearner:
 
         labels_probability_given_this_features = {}
         for label, label_probability in enumerate(self.labels_probability):
-            features_probabilities_given_label = self.gaussian_probability(feature_data, self.means[label],
-                                                                           self.st_devs[label])
+            features_probabilities_given_label = \
+                scipy.stats.norm(self.means[label], self.st_devs[label]).pdf(feature_data)
+            # features_probabilities_given_label = self.gaussian_probability(feature_data, self.means[label],
+            #                                                                self.st_devs[label])
             labels_probability_given_this_features[label] = np.prod(features_probabilities_given_label) * \
                                                             self.labels_probability[label]
 
@@ -33,9 +35,8 @@ class NaiveBayesLearner:
     @staticmethod
     def gaussian_probability(feature_data, mean, st_dev):
 
-        variance = st_dev ** 2
-        denominator = np.sqrt(2 * np.pi * variance)
-        numerator = np.exp(-(feature_data - mean) ** 2 / (2 * variance))
+        denominator = st_dev * np.sqrt(2 * np.pi)
+        numerator = np.exp(-(feature_data - mean) ** 2 / (2 * (st_dev ** 2)))
         return numerator / denominator
 
     @staticmethod
